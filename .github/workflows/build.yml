@@ -1,0 +1,46 @@
+name: Construire et publier l'image
+
+# Se déclenche à chaque envoi de code sur la branche main,
+# et peut aussi être lancé manuellement depuis l'onglet Actions.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write          # autorise la publication de l'image sur ghcr.io
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Identifiant du dépôt en minuscules
+        id: repo
+        # ghcr.io exige un nom en minuscules.
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Préparation de Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Préparation de QEMU (compatibilité multi-architecture)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Connexion à GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construction et publication de l'image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # amd64 (NAS Intel/AMD) + arm64 (NAS ARM) : couvre tous les Synology.
+          platforms: linux/amd64,linux/arm64
+          tags: ghcr.io/${{ steps.repo.outputs.owner }}/audio-recorder:latest

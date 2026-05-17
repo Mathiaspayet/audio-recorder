@@ -1,0 +1,11 @@
+# Données locales et enregistrements (ne jamais envoyer sur GitHub)
+data/
+*.mp3
+settings.json
+metadata.json
+
+# Fichiers temporaires
+*.tmp
+__pycache__/
+*.pyc
+.DS_Store

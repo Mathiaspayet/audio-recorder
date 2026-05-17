@@ -1,0 +1,48 @@
+# ===========================================================================
+#  Enregistreur audio RTSP  -  déploiement sur le NAS Synology
+# ===========================================================================
+#  Ce fichier est utilisé À DEUX ENDROITS :
+#   - dans le dépôt GitHub (pour mémoire / versionnage) ;
+#   - copié sur le NAS, c'est lui que Container Manager exécute.
+#
+#  Une seule chose à adapter : remplacer __GITHUB_USER__ par votre identifiant
+#  GitHub, en minuscules (Claude Code le fait automatiquement, voir CLAUDE.md).
+# ===========================================================================
+
+services:
+
+  # ----- L'application d'enregistrement audio -----
+  audio-recorder:
+    image: ghcr.io/mathiaspayet/audio-recorder:latest
+    container_name: audio-recorder
+    restart: unless-stopped
+    ports:
+      # "PORT_EXTERNE:8080"  ->  tableau de bord sur http://IP-DU-NAS:8095
+      - "8095:8080"
+    environment:
+      - TZ=Europe/Paris
+      # Tous les autres réglages (URL RTSP, dossier, durées, qualité...) se
+      # font dans l'interface web. Ils sont conservés dans ./data/settings.json.
+    volumes:
+      # Côté gauche = emplacement physique des enregistrements sur le NAS.
+      # Pour stocker sur un autre volume, changez-le, ex. /volume2/audio:/data
+      - ./data:/data
+    labels:
+      # Indispensable : autorise Watchtower à mettre CE conteneur à jour.
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ----- Watchtower : met l'application à jour automatiquement -----
+  # Dès qu'une nouvelle image est publiée sur GitHub, Watchtower la récupère
+  # et redémarre le conteneur. (Image : fork maintenu de Watchtower, le projet
+  # d'origine containrrr/watchtower ayant été archivé fin 2025.)
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=Europe/Paris
+      - WATCHTOWER_CLEANUP=true          # supprime les anciennes images
+      - WATCHTOWER_LABEL_ENABLE=true     # ne surveille que les conteneurs étiquetés
+      - WATCHTOWER_POLL_INTERVAL=300     # vérifie toutes les 5 minutes
