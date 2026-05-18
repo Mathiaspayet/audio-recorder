@@ -25,7 +25,7 @@ import subprocess
 import datetime as dt
 from pathlib import Path
 
-from flask import Flask, jsonify, make_response, request, send_file, send_from_directory, abort
+from flask import Flask, Response, jsonify, make_response, request, send_file, send_from_directory, abort, stream_with_context
 from waitress import serve
 
 
@@ -531,6 +531,42 @@ def api_folders():
                         folders.add(f"{p.name}/{sub.name}")
     folders.add(get_settings()["folder"])
     return jsonify(sorted(folders))
+
+
+@app.get("/live")
+def live_audio():
+    """Diffuse le flux RTSP en direct sous forme de stream MP3."""
+    s = get_settings()
+    rtsp = s.get("rtsp_url", "").strip()
+    if not rtsp:
+        abort(503)
+    kbps = s.get("bitrate_kbps", 96)
+    cmd = [
+        "ffmpeg", "-hide_banner", "-loglevel", "warning",
+        "-rtsp_transport", "tcp",
+        "-i", rtsp,
+        "-vn",
+        "-c:a", "libmp3lame", "-b:a", f"{kbps}k",
+        "-ac", "1", "-ar", "44100",
+        "-f", "mp3", "pipe:1",
+    ]
+    def generate():
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL)
+        try:
+            while True:
+                chunk = proc.stdout.read(8192)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            proc.kill()
+            proc.wait()
+    return Response(
+        stream_with_context(generate()),
+        mimetype="audio/mpeg",
+        headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/audio/<path:name>")
