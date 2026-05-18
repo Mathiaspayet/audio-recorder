@@ -296,6 +296,11 @@ function updateEstimate() {
 }
 
 async function saveSettings() {
+  if (!$("fRtsp").value.trim()) {
+    $("modalMsg").textContent = "L'adresse RTSP est obligatoire.";
+    return;
+  }
+
   const btn = $("saveSettings");
   btn.disabled = true;
   $("modalMsg").textContent = "Enregistrement…";

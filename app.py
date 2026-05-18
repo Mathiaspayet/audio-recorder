@@ -419,7 +419,13 @@ def storage_info():
 
 @app.get("/")
 def index():
-    return send_from_directory(STATIC_DIR, "index.html")
+    build_date = os.environ.get("BUILD_DATE", "dev")
+    content = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    content = content.replace('href="/static/style.css"',
+                              f'href="/static/style.css?v={build_date}"')
+    content = content.replace('src="/static/app.js"',
+                              f'src="/static/app.js?v={build_date}"')
+    return content
 
 
 @app.get("/api/segments")
