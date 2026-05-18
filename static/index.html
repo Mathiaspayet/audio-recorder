@@ -16,157 +16,146 @@
       <span class="logo-dot" id="liveDot"></span>
       <h1>Moniteur&nbsp;Audio</h1>
     </div>
-    <div class="topbar-right">
-      <div class="stats" id="stats">
-        <span class="stat"><b id="statCount">—</b> segments</span>
-        <span class="stat-sep">/</span>
-        <span class="stat"><b id="statSpan">—</b> captés</span>
-        <span class="stat-sep">/</span>
-        <span class="stat" id="statRec">—</span>
-      </div>
-      <button class="gear" id="openSettings" title="Réglages" aria-label="Réglages">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3.2"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.61.74 1.05 1.4 1.05H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-      </button>
+    <nav class="tabs">
+      <button class="tab tab--active" id="tabDashboard">Tableau de bord</button>
+      <button class="tab" id="tabSettings">⚙ Réglages</button>
+    </nav>
+    <div class="stats" id="stats">
+      <span class="stat"><b id="statCount">—</b> segments</span>
+      <span class="stat-sep">/</span>
+      <span class="stat"><b id="statSpan">—</b> captés</span>
+      <span class="stat-sep">/</span>
+      <span class="stat" id="statRec">—</span>
     </div>
   </header>
 
-  <!-- ----- Lecteur du segment sélectionné ----- -->
-  <section class="player" id="player" hidden>
-    <div class="player-head">
-      <div class="player-when">
-        <span class="player-date" id="selDate">—</span>
-        <span class="player-time" id="selTime">—</span>
-      </div>
-      <div class="readouts">
-        <div class="readout">
-          <span class="readout-label">pic</span>
-          <span class="readout-value" id="selPeak">—</span>
+  <!-- ======================= Panneau : Tableau de bord ======================= -->
+  <div id="panelDashboard">
+
+    <!-- Lecteur du segment sélectionné -->
+    <section class="player" id="player" hidden>
+      <div class="player-head">
+        <div class="player-when">
+          <span class="player-date" id="selDate">—</span>
+          <span class="player-time" id="selTime">—</span>
         </div>
-        <div class="readout">
-          <span class="readout-label">moyen</span>
-          <span class="readout-value" id="selMean">—</span>
-        </div>
-      </div>
-    </div>
-    <div class="curve" id="curve" title="Niveau sonore au fil du segment">
-      <div class="curve-playhead" id="playhead"></div>
-    </div>
-    <audio id="audio" controls preload="none"></audio>
-  </section>
-
-  <!-- ----- Frise chronologique ----- -->
-  <main class="timeline" id="timeline">
-    <p class="empty" id="emptyMsg">Chargement…</p>
-  </main>
-
-  <!-- ----- Légende ----- -->
-  <footer class="legend">
-    <span class="legend-label">calme</span>
-    <div class="legend-bar"></div>
-    <span class="legend-label">bruit fort</span>
-    <span class="legend-note" id="legendNote"></span>
-  </footer>
-
-  <!-- ======================= Fenêtre de réglages ======================= -->
-  <div class="modal-backdrop" id="modal" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Réglages">
-      <div class="modal-head">
-        <h2>Réglages</h2>
-        <button class="modal-close" id="closeSettings" aria-label="Fermer">✕</button>
-      </div>
-
-      <div class="modal-body">
-
-        <label class="field">
-          <span class="field-label">Adresse RTSP de la caméra</span>
-          <input type="text" id="fRtsp" spellcheck="false" autocomplete="off"
-                 placeholder="rtsp://utilisateur:motdepasse@192.168.1.50:554/flux" />
-          <span class="field-hint">L'adresse du flux. Le son doit y être présent.</span>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Dossier d'enregistrement</span>
-          <input type="text" id="fFolder" spellcheck="false" autocomplete="off"
-                 list="folderList" placeholder="recordings" />
-          <datalist id="folderList"></datalist>
-          <span class="field-hint">Sous-dossier où ranger les fichiers (ex.
-            « recordings/jardin »). Le disque physique se choisit côté NAS.</span>
-        </label>
-
-        <div class="field-row">
-          <label class="field">
-            <span class="field-label">Durée d'un segment</span>
-            <span class="range-wrap">
-              <input type="range" id="fSegment" min="1" max="60" step="1" />
-              <output id="fSegmentOut">10 min</output>
-            </span>
-          </label>
-          <label class="field">
-            <span class="field-label">Conservation</span>
-            <span class="range-wrap">
-              <input type="range" id="fRetention" min="1" max="30" step="1" />
-              <output id="fRetentionOut">3 j</output>
-            </span>
-          </label>
-        </div>
-
-        <label class="field">
-          <span class="field-label">Qualité audio</span>
-          <select id="fBitrate" autocomplete="off">
-            <option value="32">32 kbps — voix, place minimale</option>
-            <option value="64">64 kbps — correct</option>
-            <option value="96">96 kbps — recommandé</option>
-            <option value="128">128 kbps — confortable</option>
-            <option value="192">192 kbps — élevé</option>
-            <option value="256">256 kbps — maximal</option>
-          </select>
-        </label>
-
-        <div class="field-row">
-          <label class="field">
-            <span class="field-label">Seuil « calme » (dB)</span>
-            <input type="number" id="fQuiet" min="-90" max="-2" step="1" autocomplete="off" />
-          </label>
-          <label class="field">
-            <span class="field-label">Seuil « bruit fort » (dB)</span>
-            <input type="number" id="fLoud" min="-89" max="0" step="1" autocomplete="off" />
-          </label>
-        </div>
-
-        <!-- Estimation d'espace, mise à jour en direct -->
-        <div class="storage" id="storage">
-          <div class="storage-line">
-            <span>Espace nécessaire (estimation)</span>
-            <b id="stEstimate">—</b>
+        <div class="readouts">
+          <div class="readout">
+            <span class="readout-label">pic</span>
+            <span class="readout-value" id="selPeak">—</span>
           </div>
-          <div class="storage-bar"><div class="storage-fill" id="stFill"></div></div>
-          <div class="storage-line storage-sub">
-            <span>Espace libre sur le disque</span>
-            <span id="stFree">—</span>
+          <div class="readout">
+            <span class="readout-label">moyen</span>
+            <span class="readout-value" id="selMean">—</span>
           </div>
-          <div class="storage-line storage-sub">
-            <span>Occupé actuellement par ce dossier</span>
-            <span id="stUsage">—</span>
-          </div>
-          <p class="storage-verdict" id="stVerdict"></p>
         </div>
+      </div>
+      <div class="curve" id="curve" title="Niveau sonore au fil du segment">
+        <div class="curve-playhead" id="playhead"></div>
+      </div>
+      <audio id="audio" controls preload="none"></audio>
+    </section>
 
+    <!-- Frise chronologique -->
+    <main class="timeline" id="timeline">
+      <p class="empty" id="emptyMsg">Chargement…</p>
+    </main>
+
+    <!-- Légende -->
+    <footer class="legend">
+      <span class="legend-label">calme</span>
+      <div class="legend-bar"></div>
+      <span class="legend-label">bruit fort</span>
+      <span class="legend-note" id="legendNote"></span>
+    </footer>
+
+  </div><!-- fin #panelDashboard -->
+
+  <!-- ======================= Panneau : Réglages ======================= -->
+  <div id="panelSettings" hidden>
+    <div class="settings-panel">
+
+      <div class="field">
+        <span class="field-label">Adresse RTSP de la caméra</span>
+        <input type="text" id="fRtsp" spellcheck="false" autocomplete="off"
+               placeholder="rtsp://utilisateur:motdepasse@192.168.1.50:554/flux" />
+        <span class="field-hint">L'adresse du flux. Le son doit y être présent.</span>
       </div>
 
-      <div class="modal-foot">
+      <div class="field">
+        <span class="field-label">Dossier d'enregistrement</span>
+        <input type="text" id="fFolder" spellcheck="false" autocomplete="off"
+               list="folderList" placeholder="recordings" />
+        <datalist id="folderList"></datalist>
+        <span class="field-hint">Sous-dossier où ranger les fichiers (ex.
+          « recordings/jardin »). Le disque physique se choisit côté NAS.</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label">Durée d'un segment</span>
+          <span class="range-wrap">
+            <input type="range" id="fSegment" min="1" max="60" step="1" />
+            <output id="fSegmentOut">10 min</output>
+          </span>
+        </div>
+        <div class="field">
+          <span class="field-label">Conservation</span>
+          <span class="range-wrap">
+            <input type="range" id="fRetention" min="1" max="30" step="1" />
+            <output id="fRetentionOut">3 j</output>
+          </span>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Qualité audio</span>
+        <select id="fBitrate" autocomplete="off">
+          <option value="32">32 kbps — voix, place minimale</option>
+          <option value="64">64 kbps — correct</option>
+          <option value="96">96 kbps — recommandé</option>
+          <option value="128">128 kbps — confortable</option>
+          <option value="192">192 kbps — élevé</option>
+          <option value="256">256 kbps — maximal</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label">Seuil « calme » (dB)</span>
+          <input type="number" id="fQuiet" min="-90" max="-2" step="1" autocomplete="off" />
+        </div>
+        <div class="field">
+          <span class="field-label">Seuil « bruit fort » (dB)</span>
+          <input type="number" id="fLoud" min="-89" max="0" step="1" autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- Estimation d'espace -->
+      <div class="storage" id="storage">
+        <div class="storage-line">
+          <span>Espace nécessaire (estimation)</span>
+          <b id="stEstimate">—</b>
+        </div>
+        <div class="storage-bar"><div class="storage-fill" id="stFill"></div></div>
+        <div class="storage-line storage-sub">
+          <span>Espace libre sur le disque</span>
+          <span id="stFree">—</span>
+        </div>
+        <div class="storage-line storage-sub">
+          <span>Occupé actuellement par ce dossier</span>
+          <span id="stUsage">—</span>
+        </div>
+        <p class="storage-verdict" id="stVerdict"></p>
+      </div>
+
+      <div class="settings-foot">
         <span class="modal-msg" id="modalMsg"></span>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" id="cancelSettings">Annuler</button>
-          <button class="btn btn-primary" id="saveSettings">Enregistrer</button>
-        </div>
+        <button class="btn btn-primary" id="saveSettings">Enregistrer</button>
       </div>
+
     </div>
-  </div>
+  </div><!-- fin #panelSettings -->
 
   <script src="/static/app.js"></script>
 </body>
