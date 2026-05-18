@@ -99,7 +99,7 @@ def validate_settings(raw):
     partielles ou douteuses (venant du fichier ou de l'interface web)."""
     s = dict(DEFAULT_SETTINGS)
     if isinstance(raw, dict):
-        s.update({k: raw[k] for k in raw if k in DEFAULT_SETTINGS})
+        s.update({k: raw[k] for k in raw if k in DEFAULT_SETTINGS and raw[k] != ""})
 
     s["rtsp_url"]        = str(s["rtsp_url"]).strip()
     s["folder"]          = sanitize_folder(s["folder"])
