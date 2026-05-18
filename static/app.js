@@ -125,7 +125,6 @@ function render() {
 
   const tl = $("timeline");
   tl.innerHTML = "";
-  const gapThreshold = CONFIG.segment_minutes * 1.8;
 
   for (const key of keys) {
     const day = days[key];
@@ -140,21 +139,34 @@ function render() {
       `<span class="day-meta">${day.segs.length} segments</span>`;
     block.appendChild(head);
 
+    // Plage horaire : arrondie à l'heure inférieure/supérieure
+    const firstMin    = day.segs[0].p.minutes;
+    const lastMin     = day.segs[day.segs.length - 1].p.minutes + CONFIG.segment_minutes;
+    const rangeStartH = Math.floor(firstMin / 60);
+    const rangeEndH   = Math.ceil(lastMin / 60);
+    const rangeMin    = (rangeEndH - rangeStartH) * 60 || 1;
+
     const strip = document.createElement("div");
     strip.className = "strip";
 
-    let prevMin = null;
-    for (const { seg, p } of day.segs) {
-      if (prevMin !== null && p.minutes - prevMin > gapThreshold) {
-        const gap = document.createElement("div");
-        gap.className = "cell gap";
-        gap.title = "Interruption de l'enregistrement";
-        strip.appendChild(gap);
-      }
-      prevMin = p.minutes;
+    // Marques horaires
+    for (let h = rangeStartH; h <= rangeEndH; h++) {
+      const pct = ((h - rangeStartH) / (rangeEndH - rangeStartH) * 100).toFixed(2);
+      const tick = document.createElement("span");
+      tick.className = "strip-tick";
+      tick.style.left = pct + "%";
+      tick.textContent = String(h % 24).padStart(2, "0") + "h";
+      strip.appendChild(tick);
+    }
 
+    // Segments positionnés sur l'axe du temps
+    for (const { seg, p } of day.segs) {
+      const leftPct  = ((p.minutes - rangeStartH * 60) / rangeMin * 100).toFixed(3);
+      const widthPct = (CONFIG.segment_minutes / rangeMin * 100).toFixed(3);
       const cell = document.createElement("div");
       cell.className = "cell";
+      cell.style.left       = leftPct + "%";
+      cell.style.width      = widthPct + "%";
       cell.style.background = colorFor(seg.peak_db);
       cell.title = `${p.hhmm}  ·  pic ${seg.peak_db} dB`;
       cell.dataset.name = seg.name;
