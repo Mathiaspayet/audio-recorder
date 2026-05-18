@@ -25,7 +25,7 @@ import subprocess
 import datetime as dt
 from pathlib import Path
 
-from flask import Flask, jsonify, request, send_file, send_from_directory, abort
+from flask import Flask, jsonify, make_response, request, send_file, send_from_directory, abort
 from waitress import serve
 
 
@@ -436,7 +436,10 @@ def index():
                               f'href="/static/style.css?v={build_date}"')
     content = content.replace('src="/static/app.js"',
                               f'src="/static/app.js?v={build_date}"')
-    return content
+    resp = make_response(content)
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers["Content-Type"] = "text/html; charset=utf-8"
+    return resp
 
 
 @app.get("/api/segments")

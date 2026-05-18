@@ -227,21 +227,25 @@ async function openSettings() {
     const s = data.settings;
     STORAGE = data.storage;
 
-    $("fRtsp").value      = s.rtsp_url;
     $("fFolder").value    = s.folder;
     $("fSegment").value   = s.segment_minutes;
     $("fRetention").value = s.retention_days;
-    $("fBitrate").value   = String(s.bitrate_kbps);
-    $("fQuiet").value     = s.quiet_db;
-    $("fLoud").value      = s.loud_db;
-
     $("folderList").innerHTML =
       folders.map((f) => `<option value="${f}"></option>`).join("");
-
-    syncRangeOutputs();
-    updateEstimate();
     $("modalMsg").textContent = "";
     $("modal").hidden = false;
+
+    // Certains navigateurs ignorent les valeurs assignées à select et
+    // input[type=number] tant que l'élément est masqué (hidden). On attend
+    // que le rendu soit effectif avant d'affecter ces champs.
+    setTimeout(() => {
+      $("fRtsp").value    = s.rtsp_url;
+      $("fBitrate").value = String(s.bitrate_kbps);
+      $("fQuiet").value   = s.quiet_db;
+      $("fLoud").value    = s.loud_db;
+      syncRangeOutputs();
+      updateEstimate();
+    }, 0);
   } catch (err) {
     alert("Impossible de charger les réglages.");
   }
