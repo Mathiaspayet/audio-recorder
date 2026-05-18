@@ -430,12 +430,31 @@ def storage_info():
 
 @app.get("/")
 def index():
+    import html as _html
     build_date = os.environ.get("BUILD_DATE", "dev")
+    s = get_settings()
     content = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
     content = content.replace('href="/static/style.css"',
                               f'href="/static/style.css?v={build_date}"')
     content = content.replace('src="/static/app.js"',
                               f'src="/static/app.js?v={build_date}"')
+
+    # Pré-remplissage des champs côté serveur : bypass total du navigateur.
+    rtsp = _html.escape(s["rtsp_url"], quote=True)
+    content = content.replace(
+        'id="fRtsp" spellcheck="false" autocomplete="off"',
+        f'id="fRtsp" spellcheck="false" autocomplete="off" value="{rtsp}"')
+    for b in [32, 64, 96, 128, 192, 256]:
+        old = f'<option value="{b}">'
+        new = f'<option value="{b}" selected>' if b == s["bitrate_kbps"] else old
+        content = content.replace(old, new)
+    content = content.replace(
+        'id="fQuiet" min="-90" max="-2" step="1" autocomplete="off"',
+        f'id="fQuiet" min="-90" max="-2" step="1" autocomplete="off" value="{int(s["quiet_db"])}"')
+    content = content.replace(
+        'id="fLoud" min="-89" max="0" step="1" autocomplete="off"',
+        f'id="fLoud" min="-89" max="0" step="1" autocomplete="off" value="{int(s["loud_db"])}"')
+
     resp = make_response(content)
     resp.headers["Cache-Control"] = "no-store"
     resp.headers["Content-Type"] = "text/html; charset=utf-8"
