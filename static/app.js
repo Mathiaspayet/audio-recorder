@@ -12,6 +12,7 @@ let CONFIG   = { segment_minutes: 10, retention_days: 3,
 let SEGMENTS = [];
 let STORAGE  = null;     // dernier état du disque connu
 let selectedName = null;
+let liveMode = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -164,7 +165,39 @@ function render() {
   }
 }
 
+/* ---------- Mode direct -------------------------------------------------- */
+
+function startLive() {
+  liveMode = true;
+  $("btnLive").classList.add("live");
+  $("player").hidden = false;
+  $("selDate").textContent = "En direct";
+  $("selTime").textContent = "flux temps réel";
+  $("selPeak").textContent = "—";
+  $("selMean").textContent = "—";
+  drawCurve([]);
+  $("playhead").style.display = "none";
+  document.querySelectorAll(".cell.selected")
+          .forEach((c) => c.classList.remove("selected"));
+  selectedName = null;
+  const a = $("audio");
+  a.src = "/live";
+  a.load();
+  a.play().catch(() => {});
+}
+
+function stopLive() {
+  if (!liveMode) return;
+  liveMode = false;
+  $("btnLive").classList.remove("live");
+  const a = $("audio");
+  a.pause();
+  a.removeAttribute("src");
+  a.load();
+}
+
 function selectSegment(name) {
+  stopLive();
   const seg = SEGMENTS.find((s) => s.name === name);
   if (!seg) return;
   selectedName = name;
@@ -213,6 +246,8 @@ audio.addEventListener("timeupdate", () => {
   const frac = audio.currentTime / audio.duration;
   $("playhead").style.left = `calc(8px + ${frac} * (100% - 16px))`;
 });
+audio.addEventListener("ended", () => { if (liveMode) stopLive(); });
+audio.addEventListener("error",  () => { if (liveMode) stopLive(); });
 
 /* ---------- Navigation par onglets --------------------------------------- */
 
@@ -352,6 +387,9 @@ async function saveSettings() {
 
 /* ---------- Branchements ------------------------------------------------- */
 
+$("btnLive").addEventListener("click", () => {
+  if (liveMode) stopLive(); else startLive();
+});
 $("tabDashboard").addEventListener("click", () => showTab("dashboard"));
 $("tabSettings").addEventListener("click", () => {
   showTab("settings");

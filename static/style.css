@@ -118,6 +118,43 @@ b { font-weight: 700; }
 .stat-sep { color: var(--text-faint); }
 .version  { font-size: 11px; color: var(--text-faint); white-space: nowrap; }
 
+/* ----------------------------- Bouton Direct --------------------------- */
+
+.btn-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.btn-live:hover { color: var(--text); border-color: var(--text-dim); }
+.btn-live.live {
+  background: #280a0a;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.btn-live.live .live-dot { animation: pulse-red 1.5s ease-out infinite; }
+@keyframes pulse-red {
+  0%   { box-shadow: 0 0 0 0 #e44a2a66; }
+  70%  { box-shadow: 0 0 0 7px #e44a2a00; }
+  100% { box-shadow: 0 0 0 0 #e44a2a00; }
+}
+
 .gear {
   display: flex;
   align-items: center;
