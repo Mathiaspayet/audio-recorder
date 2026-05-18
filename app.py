@@ -44,13 +44,13 @@ STATIC_DIR = BASE_DIR / "static"
 # Réglages utilisés UNIQUEMENT au tout premier démarrage (ensuite, c'est le
 # fichier settings.json, modifiable via l'interface, qui fait foi).
 DEFAULT_SETTINGS = {
-    "rtsp_url":        os.environ.get("RTSP_URL", "").strip(),
+    "rtsp_url":        os.environ.get("RTSP_URL", "rtsp://admin:@192.168.0.31:554/h264Preview_01_main").strip(),
     "folder":          "recordings",
-    "segment_minutes": int(float(os.environ.get("SEGMENT_MINUTES", "10"))),
-    "retention_days":  float(os.environ.get("RETENTION_DAYS", "3")),
-    "bitrate_kbps":    int(float(os.environ.get("AUDIO_BITRATE_KBPS", "96"))),
-    "quiet_db":        float(os.environ.get("QUIET_DB", "-52")),
-    "loud_db":         float(os.environ.get("LOUD_DB", "-28")),
+    "segment_minutes": 10,
+    "retention_days":  3.0,
+    "bitrate_kbps":    96,
+    "quiet_db":        -52.0,
+    "loud_db":         -28.0,
 }
 
 ALLOWED_BITRATES = [32, 64, 96, 128, 192, 256]   # kbps proposés dans l'interface
