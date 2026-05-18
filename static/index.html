@@ -117,7 +117,7 @@
 
         <label class="field">
           <span class="field-label">Qualité audio</span>
-          <select id="fBitrate">
+          <select id="fBitrate" autocomplete="off">
             <option value="32">32 kbps — voix, place minimale</option>
             <option value="64">64 kbps — correct</option>
             <option value="96">96 kbps — recommandé</option>
@@ -130,11 +130,11 @@
         <div class="field-row">
           <label class="field">
             <span class="field-label">Seuil « calme » (dB)</span>
-            <input type="number" id="fQuiet" min="-90" max="-2" step="1" />
+            <input type="number" id="fQuiet" min="-90" max="-2" step="1" autocomplete="off" />
           </label>
           <label class="field">
             <span class="field-label">Seuil « bruit fort » (dB)</span>
-            <input type="number" id="fLoud" min="-89" max="0" step="1" />
+            <input type="number" id="fLoud" min="-89" max="0" step="1" autocomplete="off" />
           </label>
         </div>
 

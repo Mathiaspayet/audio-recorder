@@ -216,6 +216,22 @@ audio.addEventListener("timeupdate", () => {
 
 /* ---------- Fenêtre de réglages ----------------------------------------- */
 
+function applySettingsToForm(s) {
+  $("fRtsp").value    = s.rtsp_url;
+  $("fFolder").value  = s.folder;
+  $("fSegment").value = s.segment_minutes;
+  $("fRetention").value = s.retention_days;
+  // selectedIndex est plus fiable que .value pour les <select>
+  const bitrateStr = String(s.bitrate_kbps);
+  const opts = $("fBitrate").options;
+  for (let i = 0; i < opts.length; i++) {
+    if (opts[i].value === bitrateStr) { $("fBitrate").selectedIndex = i; break; }
+  }
+  $("fQuiet").value = Math.round(s.quiet_db);
+  $("fLoud").value  = Math.round(s.loud_db);
+  syncRangeOutputs();
+}
+
 async function openSettings() {
   try {
     const [setRes, foldRes] = await Promise.all([
@@ -227,25 +243,20 @@ async function openSettings() {
     const s = data.settings;
     STORAGE = data.storage;
 
-    $("fFolder").value    = s.folder;
-    $("fSegment").value   = s.segment_minutes;
-    $("fRetention").value = s.retention_days;
     $("folderList").innerHTML =
       folders.map((f) => `<option value="${f}"></option>`).join("");
     $("modalMsg").textContent = "";
+
+    // 1er passage : avant l'affichage (navigateurs qui acceptent les valeurs masquées)
+    applySettingsToForm(s);
     $("modal").hidden = false;
 
-    // Certains navigateurs ignorent les valeurs assignées à select et
-    // input[type=number] tant que l'élément est masqué (hidden). On attend
-    // que le rendu soit effectif avant d'affecter ces champs.
+    // 2e passage : après l'affichage avec délai pour passer après toute
+    // restauration automatique du navigateur (autofill, session restore, etc.)
     setTimeout(() => {
-      $("fRtsp").value    = s.rtsp_url;
-      $("fBitrate").value = String(s.bitrate_kbps);
-      $("fQuiet").value   = s.quiet_db;
-      $("fLoud").value    = s.loud_db;
-      syncRangeOutputs();
+      applySettingsToForm(s);
       updateEstimate();
-    }, 0);
+    }, 150);
   } catch (err) {
     alert("Impossible de charger les réglages.");
   }
