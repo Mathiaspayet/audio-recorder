@@ -11,8 +11,10 @@ let CONFIG   = { segment_minutes: 10, retention_days: 3,
                  quiet_db: -50, loud_db: -15, recording: false, folder: "" };
 let SEGMENTS = [];
 let STORAGE  = null;     // dernier état du disque connu
-let selectedName = null;
-let liveMode = false;
+let selectedName    = null;
+let liveMode        = false;
+let _segStartMs     = null;   // timestamp (ms) du début du segment en lecture
+let _liveClockTimer = null;   // intervalle pour l'horloge en mode direct
 
 const $ = (id) => document.getElementById(id);
 
@@ -44,9 +46,14 @@ function heightFor(db) {
 function parseStart(s) {
   const [d, t] = s.split("T");
   const [Y, M, D] = d.split("-").map(Number);
-  const [h, mi]   = t.split(":").map(Number);
+  const [h, mi, sec] = t.split(":").map(Number);
   return { key: d, date: new Date(Y, M - 1, D), hhmm: t.slice(0, 5),
-           minutes: h * 60 + mi };
+           minutes: h * 60 + mi,
+           fullDate: new Date(Y, M - 1, D, h, mi, sec || 0) };
+}
+function fmtHMS(date) {
+  return date.toLocaleTimeString("fr-FR",
+         { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 function dayLabel(date) {
   return date.toLocaleDateString("fr-FR",
@@ -169,17 +176,22 @@ function render() {
 
 function startLive() {
   liveMode = true;
+  _segStartMs = null;
   $("btnLive").classList.add("live");
   $("player").hidden = false;
-  $("selDate").textContent = "En direct";
-  $("selTime").textContent = "flux temps réel";
-  $("selPeak").textContent = "—";
-  $("selMean").textContent = "—";
+  $("selDate").textContent    = "En direct";
+  $("selTime").textContent    = "flux temps réel";
+  $("selCurrent").textContent = fmtHMS(new Date());
+  $("selPeak").textContent    = "—";
+  $("selMean").textContent    = "—";
   drawCurve([]);
   $("playhead").style.display = "none";
   document.querySelectorAll(".cell.selected")
           .forEach((c) => c.classList.remove("selected"));
   selectedName = null;
+  _liveClockTimer = setInterval(() => {
+    $("selCurrent").textContent = fmtHMS(new Date());
+  }, 500);
   const a = $("audio");
   a.src = "/live";
   a.load();
@@ -189,7 +201,10 @@ function startLive() {
 function stopLive() {
   if (!liveMode) return;
   liveMode = false;
+  clearInterval(_liveClockTimer);
+  _liveClockTimer = null;
   $("btnLive").classList.remove("live");
+  $("selCurrent").textContent = "";
   const a = $("audio");
   a.pause();
   a.removeAttribute("src");
@@ -209,12 +224,14 @@ function selectSegment(name) {
 
   const p   = parseStart(seg.start);
   const end = hhmm(p.minutes + CONFIG.segment_minutes);
+  _segStartMs = p.fullDate.getTime();
 
   $("player").hidden = false;
-  $("selDate").textContent = dayLabel(p.date);
-  $("selTime").textContent = `${p.hhmm} – ${end}   (${fmtBytes(seg.size)})`;
-  $("selPeak").textContent = seg.peak_db;
-  $("selMean").textContent = seg.mean_db;
+  $("selDate").textContent    = dayLabel(p.date);
+  $("selTime").textContent    = `${p.hhmm} – ${end}   (${fmtBytes(seg.size)})`;
+  $("selCurrent").textContent = fmtHMS(p.fullDate);
+  $("selPeak").textContent    = seg.peak_db;
+  $("selMean").textContent    = seg.mean_db;
 
   drawCurve(seg.curve);
 
@@ -245,6 +262,10 @@ audio.addEventListener("timeupdate", () => {
   if (!audio.duration) return;
   const frac = audio.currentTime / audio.duration;
   $("playhead").style.left = `calc(8px + ${frac} * (100% - 16px))`;
+  if (!liveMode && _segStartMs !== null) {
+    $("selCurrent").textContent =
+      fmtHMS(new Date(_segStartMs + Math.floor(audio.currentTime * 1000)));
+  }
 });
 audio.addEventListener("ended", () => { if (liveMode) stopLive(); });
 audio.addEventListener("error",  () => { if (liveMode) stopLive(); });
