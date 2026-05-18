@@ -214,14 +214,22 @@ audio.addEventListener("timeupdate", () => {
   $("playhead").style.left = `calc(8px + ${frac} * (100% - 16px))`;
 });
 
-/* ---------- Fenêtre de réglages ----------------------------------------- */
+/* ---------- Navigation par onglets --------------------------------------- */
+
+function showTab(name) {
+  $("panelDashboard").hidden = (name !== "dashboard");
+  $("panelSettings").hidden  = (name !== "settings");
+  $("tabDashboard").classList.toggle("tab--active", name === "dashboard");
+  $("tabSettings").classList.toggle("tab--active",  name === "settings");
+}
+
+/* ---------- Réglages ----------------------------------------------------- */
 
 function applySettingsToForm(s) {
-  $("fRtsp").value    = s.rtsp_url;
-  $("fFolder").value  = s.folder;
-  $("fSegment").value = s.segment_minutes;
+  $("fRtsp").value      = s.rtsp_url;
+  $("fFolder").value    = s.folder;
+  $("fSegment").value   = s.segment_minutes;
   $("fRetention").value = s.retention_days;
-  // selectedIndex est plus fiable que .value pour les <select>
   const bitrateStr = String(s.bitrate_kbps);
   const opts = $("fBitrate").options;
   for (let i = 0; i < opts.length; i++) {
@@ -232,7 +240,7 @@ function applySettingsToForm(s) {
   syncRangeOutputs();
 }
 
-async function openSettings() {
+async function loadSettings() {
   try {
     const [setRes, foldRes] = await Promise.all([
       fetch("/api/settings", { cache: "no-store" }),
@@ -247,22 +255,12 @@ async function openSettings() {
       folders.map((f) => `<option value="${f}"></option>`).join("");
     $("modalMsg").textContent = "";
 
-    // 1er passage : avant l'affichage (navigateurs qui acceptent les valeurs masquées)
     applySettingsToForm(s);
-    $("modal").hidden = false;
-
-    // 2e passage : après l'affichage avec délai pour passer après toute
-    // restauration automatique du navigateur (autofill, session restore, etc.)
-    setTimeout(() => {
-      applySettingsToForm(s);
-      updateEstimate();
-    }, 150);
+    updateEstimate();
   } catch (err) {
-    alert("Impossible de charger les réglages.");
+    $("modalMsg").textContent = "Impossible de charger les réglages.";
   }
 }
-
-function closeSettings() { $("modal").hidden = true; }
 
 function syncRangeOutputs() {
   $("fSegmentOut").textContent   = $("fSegment").value + " min";
@@ -343,7 +341,7 @@ async function saveSettings() {
     const data = await res.json();
     STORAGE = data.storage;
     selectedName = null;        // le dossier a pu changer : on repart à zéro
-    closeSettings();
+    showTab("dashboard");
     fetchData();
   } catch (err) {
     $("modalMsg").textContent = "Échec de l'enregistrement. Réessayez.";
@@ -354,16 +352,12 @@ async function saveSettings() {
 
 /* ---------- Branchements ------------------------------------------------- */
 
-$("openSettings").addEventListener("click", openSettings);
-$("closeSettings").addEventListener("click", closeSettings);
-$("cancelSettings").addEventListener("click", closeSettings);
+$("tabDashboard").addEventListener("click", () => showTab("dashboard"));
+$("tabSettings").addEventListener("click", () => {
+  showTab("settings");
+  loadSettings();
+});
 $("saveSettings").addEventListener("click", saveSettings);
-$("modal").addEventListener("click", (e) => {
-  if (e.target === $("modal")) closeSettings();   // clic en dehors = fermer
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !$("modal").hidden) closeSettings();
-});
 $("fSegment").addEventListener("input", syncRangeOutputs);
 $("fRetention").addEventListener("input", () => { syncRangeOutputs(); updateEstimate(); });
 $("fBitrate").addEventListener("change", updateEstimate);
