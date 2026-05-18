@@ -195,7 +195,15 @@ b { font-weight: 700; }
   letter-spacing: -0.01em;
   text-transform: capitalize;
 }
-.player-time { color: var(--accent); font-size: 13px; letter-spacing: 0.04em; }
+.player-time    { color: var(--accent); font-size: 13px; letter-spacing: 0.04em; }
+.player-current {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  line-height: 1.2;
+  min-height: 1.2em;
+}
 
 .readouts { display: flex; gap: 10px; }
 .readout {
