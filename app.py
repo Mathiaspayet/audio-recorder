@@ -49,8 +49,8 @@ DEFAULT_SETTINGS = {
     "segment_minutes": int(float(os.environ.get("SEGMENT_MINUTES", "10"))),
     "retention_days":  float(os.environ.get("RETENTION_DAYS", "3")),
     "bitrate_kbps":    int(float(os.environ.get("AUDIO_BITRATE_KBPS", "96"))),
-    "quiet_db":        float(os.environ.get("QUIET_DB", "-50")),
-    "loud_db":         float(os.environ.get("LOUD_DB", "-15")),
+    "quiet_db":        float(os.environ.get("QUIET_DB", "-52")),
+    "loud_db":         float(os.environ.get("LOUD_DB", "-28")),
 }
 
 ALLOWED_BITRATES = [32, 64, 96, 128, 192, 256]   # kbps proposés dans l'interface
