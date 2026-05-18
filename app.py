@@ -469,6 +469,11 @@ def api_set_settings():
     return jsonify({"settings": new, "storage": storage_info()})
 
 
+@app.get("/api/version")
+def api_version():
+    return jsonify({"build_date": os.environ.get("BUILD_DATE", "")})
+
+
 @app.get("/api/storage")
 def api_storage():
     return jsonify(storage_info())

@@ -6,6 +6,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
+ARG BUILD_DATE=inconnue
+ENV BUILD_DATE=$BUILD_DATE
+
 WORKDIR /app
 
 # On installe d'abord les dépendances Python (mises en cache par Docker).

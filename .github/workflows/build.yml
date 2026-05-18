@@ -44,3 +44,5 @@ jobs:
           # amd64 (NAS Intel/AMD) + arm64 (NAS ARM) : couvre tous les Synology.
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ steps.repo.outputs.owner }}/audio-recorder:latest
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}

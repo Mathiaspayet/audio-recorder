@@ -90,6 +90,7 @@ b { font-weight: 700; }
 }
 .stats b { color: var(--text); }
 .stat-sep { color: var(--text-faint); }
+.version  { font-size: 11px; color: var(--text-faint); white-space: nowrap; }
 
 .gear {
   display: flex;

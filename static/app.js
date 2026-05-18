@@ -344,7 +344,27 @@ $("fSegment").addEventListener("input", syncRangeOutputs);
 $("fRetention").addEventListener("input", () => { syncRangeOutputs(); updateEstimate(); });
 $("fBitrate").addEventListener("change", updateEstimate);
 
+/* ---------- Version ------------------------------------------------------ */
+
+async function fetchVersion() {
+  try {
+    const res  = await fetch("/api/version", { cache: "no-store" });
+    const data = await res.json();
+    if (!data.build_date) return;
+    const d = new Date(data.build_date);
+    const label = d.toLocaleString("fr-FR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    const el = document.createElement("span");
+    el.className = "version";
+    el.textContent = "v " + label;
+    $("stats").after(el);
+  } catch (_) {}
+}
+
 /* ---------- Démarrage ---------------------------------------------------- */
 
 fetchData();
+fetchVersion();
 setInterval(fetchData, 45000);
