@@ -300,6 +300,10 @@ async function saveSettings() {
     $("modalMsg").textContent = "L'adresse RTSP est obligatoire.";
     return;
   }
+  if ($("fQuiet").value === "" || $("fLoud").value === "") {
+    $("modalMsg").textContent = "Les seuils dB sont obligatoires.";
+    return;
+  }
 
   const btn = $("saveSettings");
   btn.disabled = true;

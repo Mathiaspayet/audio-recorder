@@ -97,9 +97,20 @@ def sanitize_folder(raw):
 def validate_settings(raw):
     """Construit un jeu de réglages complet et valide à partir de données
     partielles ou douteuses (venant du fichier ou de l'interface web)."""
+    def _keep(key, val):
+        if val is None or val == "":
+            return False
+        if key == "quiet_db":
+            try: return -90 <= float(val) < -1
+            except (ValueError, TypeError): return False
+        if key == "loud_db":
+            try: return -89 <= float(val) <= 0
+            except (ValueError, TypeError): return False
+        return True
+
     s = dict(DEFAULT_SETTINGS)
     if isinstance(raw, dict):
-        s.update({k: raw[k] for k in raw if k in DEFAULT_SETTINGS and raw[k] != ""})
+        s.update({k: raw[k] for k in raw if k in DEFAULT_SETTINGS and _keep(k, raw[k])})
 
     s["rtsp_url"]        = str(s["rtsp_url"]).strip()
     s["folder"]          = sanitize_folder(s["folder"])
